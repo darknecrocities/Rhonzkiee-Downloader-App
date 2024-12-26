@@ -31,32 +31,48 @@ Welcome to **Rhonzkieee**, your ultimate tool for downloading YouTube videos and
 - **Streamlit**: A fast app framework to build the user interface.
 - **platform**: For detecting the system and choosing the correct default download path.
 
+
 ## Installation 💻
 
-1. Clone the repository or download the project files.
+1. **Clone the repository** or **download the project files**.
 
-2. Install the necessary dependencies:
-   ```
+2. **Install the necessary dependencies**:
+   ```bash
    pip install yt-dlp streamlit
    ```
 
-3. Run the app:
+3. **Run the app**:
+   ```bash
+   streamlit run main.py
    ```
-   streamlit run app.py
+   
+   **Alternatively**, if you prefer to run the app locally or experience the actual application behavior, it's recommended to use `youtube.py`:
+   ```bash
+   streamlit run youtube.py
    ```
 
-4. Access the app in your browser:  
+4. **Access the app in your browser**:  
    - Visit `http://localhost:8501` to use the **Rhonzkieee** YouTube downloader.
-
-## Notes 📢
-
-- The **default download path** is determined based on your operating system.  
-  - Windows, macOS, Linux, Android, iOS all default to your `Downloads` folder.
-- You can download videos or extract audio with the click of a button. 🎶
-- **Streamlit** shows a progress bar during downloads to let you track your progress. ⏳
-- **Compatible**: IOS,MACOS,LINUX,WINDOWS,ANDROID,MI
 
 ---
 
-Thank you for using **Rhonzkieee**! Enjoy downloading your favorite content effortlessly! 🎉
+## Notes 📢
+
+- The **default download path** is determined based on your operating system:  
+  - **Windows**, **macOS**, **Linux**, **Android**, and **iOS** all default to the `Downloads` folder.
+
+- You can easily download videos or extract audio with the click of a button. 🎶
+
+- **Streamlit** shows a progress bar during downloads to let you track your progress. ⏳
+
+- **Compatible platforms**: iOS, macOS, Linux, Windows, Android, MI.
+
+- **Important**: 
+  - If you're downloading audio from YouTube, it might be saved in the `.webm` format, which can be blocked by certain systems due to unsupported cookies. 
+  - In such cases, **running `youtube.py` locally** is recommended for proper functionality, as it will download audio in **MP3** format instead.
+
+
+---
+
+Thank you for using **Rhonzkieee Downloader**! Enjoy downloading your favorite content effortlessly! 🎉
 
