@@ -47,12 +47,10 @@ def search_youtube(query):
 def download_video(url, save_path, audio_only=False):
     """
     Downloads the video or audio from YouTube and saves it to the specified path.
-    This version avoids merging audio and video (no need for ffmpeg).
     """
     try:
         # Set up custom headers and options to download the best video or audio file
         ydl_opts = {
-            'format': 'best',  # Download the best single file (no merging)
             'noplaylist': True,  # Ensure it's only downloading a single video
             'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save video in the specified path
             'headers': {
@@ -60,14 +58,20 @@ def download_video(url, save_path, audio_only=False):
             },
             'progress_hooks': [progress_hook],  # Add progress hook to update Streamlit progress bar
             'retry': 3,  # Retry the download a few times in case of failure
-            'extractaudio': audio_only,  # Extract audio if audio_only is True
         }
 
-        # If the user wants audio only, adjust the format option
+        # If the user wants audio only, adjust the format option and postprocessors
         if audio_only:
             ydl_opts['format'] = 'bestaudio/best'  # Download the best audio file only
+            ydl_opts['postprocessors'] = [{
+                'key': 'FFmpegAudioConvertor',  # Use ffmpeg to convert the audio
+                'preferredcodec': 'mp3',        # Convert to mp3
+                'preferredquality': '192',      # Set the quality to 192 kbps
+            }]
+        else:
+            ydl_opts['format'] = 'bestvideo+bestaudio/best'  # Download the best video and audio
 
-        # Use yt-dlp to download the video
+        # Use yt-dlp to download the video or audio
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
