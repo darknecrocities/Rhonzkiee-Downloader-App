@@ -54,6 +54,7 @@ Welcome to **Rhonzkieee**, your ultimate tool for downloading YouTube videos and
   - Windows, macOS, Linux, Android, iOS all default to your `Downloads` folder.
 - You can download videos or extract audio with the click of a button. 🎶
 - **Streamlit** shows a progress bar during downloads to let you track your progress. ⏳
+- **Compatible**: IOS,MACOS,LINUX,WINDOWS,ANDROID,MI
 
 ---
 
