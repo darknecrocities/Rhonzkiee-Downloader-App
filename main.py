@@ -44,6 +44,7 @@ def search_youtube(query):
         return result['entries']  # Returns a list of video entries
 
 
+
 def download_video(url, save_path, audio_only=False):
     """
     Downloads the video or audio from YouTube and saves it to the specified path.
@@ -56,9 +57,11 @@ def download_video(url, save_path, audio_only=False):
             'noplaylist': True,  # Ensure it's only downloading a single video
             'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save video in the specified path
             'headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'  # Updated User-Agent
             },
             'progress_hooks': [progress_hook],  # Add progress hook to update Streamlit progress bar
+            'retry': 3,  # Retry the download a few times in case of failure
+            'extractaudio': audio_only,  # Extract audio if audio_only is True
         }
 
         # If the user wants audio only, adjust the format option
