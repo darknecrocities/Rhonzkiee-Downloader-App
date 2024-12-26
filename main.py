@@ -69,7 +69,7 @@ def download_video(url, save_path, audio_only=False):
                 'preferredcodec': 'mp3',  # Convert audio to mp3
                 'preferredquality': '192',  # Set the preferred quality (e.g., 192kbps)
             }]
-            ydl_opts['outtmpl'] = f'{save_path}/%(title)s.%(ext)s'  # Set output format to mp3
+            ydl_opts['outtmpl'] = f'{save_path}/%(title)s.mp3'  # Set output format to mp3
 
         else:
             # For video, download in the best video format available and save as mp4
@@ -89,6 +89,7 @@ def download_video(url, save_path, audio_only=False):
     except Exception as e:
         st.error(f"Error: {e}")
         return None
+
 
 
 
