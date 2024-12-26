@@ -46,55 +46,56 @@ def search_youtube(query):
 
 def download_video(url, save_path, audio_only=False):
     """
-    Downloads the video or audio from YouTube and saves it to the specified path.
-    This version avoids merging audio and video (no need for ffmpeg).
+    Downloads the video or audio from YouTube and converts it to mp4 format.
     """
     try:
-        # Set up custom headers and options to download the best video or audio file
+        # Set up custom headers (User-Agent to bypass restrictions)
         ydl_opts = {
+            'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Output path for saving the video
+            'format': 'bestvideo+bestaudio/best' if not audio_only else 'bestaudio/best',  # Choose best video or audio
             'noplaylist': True,  # Ensure it's only downloading a single video
-            'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save video in the specified path
+            'merge_output_format': 'mp4',  # Convert to mp4 for compatibility
             'headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'  # Updated User-Agent
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
             },
-            'progress_hooks': [progress_hook],  # Add progress hook to update Streamlit progress bar
-            'retry': 3,  # Retry the download a few times in case of failure
+            'postprocessors': [{
+                'key': 'FFmpegVideoConvertor',  # Convert video to mp4 format for all devices
+                'preferedformat': 'mp4',  # Convert to mp4 format
+            }],
+            'progress_hooks': [progress_hook],  # Add progress hook
         }
-
-        # If the user wants audio only, adjust the format option
-        if audio_only:
-            ydl_opts['format'] = 'bestaudio/best'  # Download the best audio file only
-            ydl_opts['postprocessors'] = [{
-                'key': 'FFmpegAudioConvertor',  # Use FFmpeg to convert audio
-                'preferredcodec': 'mp3',  # Convert audio to mp3
-                'preferredquality': '192',  # Set the preferred quality (e.g., 192kbps)
-            }]
-            ydl_opts['outtmpl'] = f'{save_path}/%(title)s.mp3'  # Set output format to mp3
-
-        else:
-            # For video, download in the best video format available and save as mp4
-            ydl_opts['format'] = 'bestvideo+bestaudio/best'  # Download best video + audio
-            ydl_opts['outtmpl'] = f'{save_path}/%(title)s.mp4'  # Force video to mp4 format
 
         # Use yt-dlp to download the video
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
-        # Get the downloaded file path
-        filename = ydl.prepare_filename(ydl.extract_info(url, download=False))
-        filepath = os.path.abspath(filename)
-
-        return filepath  # Return the path to the downloaded file
+        # Show success notification with confetti
+        st.success(f"✅ Download completed successfully! The file was saved to {save_path}")
+        st.balloons()  # Trigger confetti animation
 
     except Exception as e:
-        st.error(f"Error: {str(e)}")
-        return None
+        st.error(f"❌ Error: {e}")
+
 
 # Progress hook function to update the Streamlit progress bar
 def progress_hook(d):
-    if d['status'] == 'downloading':
-        percent = d['downloaded_bytes'] / d['total_bytes'] * 100
-        st.progress(percent)
+    try:
+        if d['status'] == 'downloading':
+            total_size = d.get('total_bytes', None)
+            downloaded = d.get('downloaded_bytes', 0)
+
+            if total_size:
+                # Ensure the progress value is within a valid range (0.0 to 1.0)
+                progress = downloaded / total_size  # Calculate progress as a fraction
+                progress = min(1.0, max(0.0, progress))  # Ensure it stays within [0, 1]
+                st.progress(progress)  # Update progress bar
+            else:
+                # If no total size, show the download progress in some estimated range
+                progress = downloaded / 1000000  # Arbitrary scale for progress in case no total size is available
+                st.progress(min(1.0, max(0.0, progress)))  # Clamp between 0 and 1
+
+    except Exception as e:
+        st.error(f"Error in progress hook: {e}")
 
 
 def main():
@@ -145,17 +146,7 @@ def main():
             if st.button("Download 📥"):
                 st.write("🔄 Downloading...")
                 audio_only = download_option == 'Audio'
-                downloaded_file = download_video(video_url, save_dir, audio_only)
-
-                if downloaded_file:
-                    # Provide a download link for the user
-                    st.write("✅ Download complete!")
-                    st.download_button(
-                        label="Click to download the file",
-                        data=open(downloaded_file, "rb").read(),
-                        file_name=os.path.basename(downloaded_file),
-                        mime="application/octet-stream"
-                    )
+                download_video(video_url, save_dir, audio_only)
 
         else:
             st.warning("❗ No results found for your query. Please try another search term.")
