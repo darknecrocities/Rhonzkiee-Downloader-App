@@ -47,6 +47,7 @@ def search_youtube(query):
 def download_video(url, save_path, audio_only=False):
     """
     Downloads the video or audio from YouTube and saves it to the specified path.
+    This version avoids merging audio and video (no need for ffmpeg).
     """
     try:
         # Set up custom headers and options to download the best video or audio file
@@ -60,18 +61,22 @@ def download_video(url, save_path, audio_only=False):
             'retry': 3,  # Retry the download a few times in case of failure
         }
 
-        # If the user wants audio only, adjust the format option and postprocessors
+        # If the user wants audio only, adjust the format option
         if audio_only:
             ydl_opts['format'] = 'bestaudio/best'  # Download the best audio file only
             ydl_opts['postprocessors'] = [{
-                'key': 'FFmpegAudioConvertor',  # Use ffmpeg to convert the audio
-                'preferredcodec': 'mp3',        # Convert to mp3
-                'preferredquality': '192',      # Set the quality to 192 kbps
+                'key': 'FFmpegAudioConvertor',  # Use FFmpeg to convert audio
+                'preferredcodec': 'mp3',  # Convert audio to mp3
+                'preferredquality': '192',  # Set the preferred quality (e.g., 192kbps)
             }]
-        else:
-            ydl_opts['format'] = 'bestvideo+bestaudio/best'  # Download the best video and audio
+            ydl_opts['outtmpl'] = f'{save_path}/%(title)s.%(ext)s'  # Set output format to mp3
 
-        # Use yt-dlp to download the video or audio
+        else:
+            # For video, download in the best video format available and save as mp4
+            ydl_opts['format'] = 'bestvideo+bestaudio/best'  # Download best video + audio
+            ydl_opts['outtmpl'] = f'{save_path}/%(title)s.mp4'  # Force video to mp4 format
+
+        # Use yt-dlp to download the video
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
@@ -84,6 +89,7 @@ def download_video(url, save_path, audio_only=False):
     except Exception as e:
         st.error(f"Error: {e}")
         return None
+
 
 
 # Progress hook function to update the Streamlit progress bar
