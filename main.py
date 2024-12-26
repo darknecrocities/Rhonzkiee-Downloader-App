@@ -90,26 +90,11 @@ def download_video(url, save_path, audio_only=False):
         st.error(f"Error: {str(e)}")
         return None
 
-
 # Progress hook function to update the Streamlit progress bar
 def progress_hook(d):
-    try:
-        if d['status'] == 'downloading':
-            total_size = d.get('total_bytes', None)
-            downloaded = d.get('downloaded_bytes', 0)
-
-            if total_size:
-                # Ensure the progress value is within a valid range (0.0 to 1.0)
-                progress = downloaded / total_size  # Calculate progress as a fraction
-                progress = min(1.0, max(0.0, progress))  # Ensure it stays within [0, 1]
-                st.progress(progress)  # Update progress bar
-            else:
-                # If no total size, show the download progress in some estimated range
-                progress = downloaded / 1000000  # Arbitrary scale for progress in case no total size is available
-                st.progress(min(1.0, max(0.0, progress)))  # Clamp between 0 and 1
-
-    except Exception as e:
-        st.error(f"Error in progress hook: {str(e)}")
+    if d['status'] == 'downloading':
+        percent = d['downloaded_bytes'] / d['total_bytes'] * 100
+        st.progress(percent)
 
 
 def main():
