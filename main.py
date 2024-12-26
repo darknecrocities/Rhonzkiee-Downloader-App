@@ -87,10 +87,8 @@ def download_video(url, save_path, audio_only=False):
         return filepath  # Return the path to the downloaded file
 
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(f"Error: {str(e)}")
         return None
-
-
 
 
 # Progress hook function to update the Streamlit progress bar
@@ -111,7 +109,7 @@ def progress_hook(d):
                 st.progress(min(1.0, max(0.0, progress)))  # Clamp between 0 and 1
 
     except Exception as e:
-        st.error(f"Error in progress hook: {e}")
+        st.error(f"Error in progress hook: {str(e)}")
 
 
 def main():
