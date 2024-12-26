@@ -52,9 +52,14 @@ def download_video(url, save_path, audio_only=False):
     try:
         # Set up custom headers and options to download the best video or audio file
         ydl_opts = {
-            'format': 'best',  # Download the best single file (no merging)
+            'format': 'bestaudio/best',  # Download the best audio file
             'noplaylist': True,  # Ensure it's only downloading a single video
             'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save video in the specified path
+            'postprocessors': [{  # Apply postprocessing to convert to desired format
+                'key': 'FFmpegAudioConvertor',  # Use FFmpeg to convert
+                'preferredcodec': 'mp3',  # Convert audio to MP3 format
+                'preferredquality': '192',  # Choose preferred quality (192kbps)
+            }],
             'headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'  # Updated User-Agent
             },
@@ -80,6 +85,7 @@ def download_video(url, save_path, audio_only=False):
     except Exception as e:
         st.error(f"Error: {e}")
         return None
+
 
 
 # Progress hook function to update the Streamlit progress bar
