@@ -46,35 +46,40 @@ def search_youtube(query):
 
 def download_video(url, save_path, audio_only=False):
     """
-    Downloads the video or audio from YouTube and converts it to mp4 format.
+    Downloads the video or audio from YouTube and saves it to the specified path.
+    This version avoids merging audio and video (no need for ffmpeg).
     """
     try:
-        # Set up custom headers (User-Agent to bypass restrictions)
+        # Set up custom headers and options to download the best video or audio file
         ydl_opts = {
-            'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Output path for saving the video
-            'format': 'bestvideo+bestaudio/best' if not audio_only else 'bestaudio/best',  # Choose best video or audio
+            'format': 'best',  # Download the best single file (no merging)
             'noplaylist': True,  # Ensure it's only downloading a single video
-            'merge_output_format': 'mp4',  # Convert to mp4 for compatibility
+            'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save video in the specified path
             'headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'  # Updated User-Agent
             },
-            'postprocessors': [{
-                'key': 'FFmpegVideoConvertor',  # Convert video to mp4 format for all devices
-                'preferedformat': 'mp4',  # Convert to mp4 format
-            }],
-            'progress_hooks': [progress_hook],  # Add progress hook
+            'progress_hooks': [progress_hook],  # Add progress hook to update Streamlit progress bar
+            'retry': 3,  # Retry the download a few times in case of failure
+            'extractaudio': audio_only,  # Extract audio if audio_only is True
         }
+
+        # If the user wants audio only, adjust the format option
+        if audio_only:
+            ydl_opts['format'] = 'bestaudio/best'  # Download the best audio file only
 
         # Use yt-dlp to download the video
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
-        # Show success notification with confetti
-        st.success(f"✅ Download completed successfully! The file was saved to {save_path}")
-        st.balloons()  # Trigger confetti animation
+        # Get the downloaded file path
+        filename = ydl.prepare_filename(ydl.extract_info(url, download=False))
+        filepath = os.path.abspath(filename)
+
+        return filepath  # Return the path to the downloaded file
 
     except Exception as e:
-        st.error(f"❌ Error: {e}")
+        st.error(f"Error: {e}")
+        return None
 
 
 # Progress hook function to update the Streamlit progress bar
@@ -146,7 +151,17 @@ def main():
             if st.button("Download 📥"):
                 st.write("🔄 Downloading...")
                 audio_only = download_option == 'Audio'
-                download_video(video_url, save_dir, audio_only)
+                downloaded_file = download_video(video_url, save_dir, audio_only)
+
+                if downloaded_file:
+                    # Provide a download link for the user
+                    st.write("✅ Download complete!")
+                    st.download_button(
+                        label="Click to download the file",
+                        data=open(downloaded_file, "rb").read(),
+                        file_name=os.path.basename(downloaded_file),
+                        mime="application/octet-stream"
+                    )
 
         else:
             st.warning("❗ No results found for your query. Please try another search term.")
