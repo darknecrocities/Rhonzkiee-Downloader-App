@@ -43,7 +43,6 @@ def search_youtube(query):
         result = ydl.extract_info(f"ytsearch:{query}", download=False)
         return result['entries']  # Returns a list of video entries
 
-
 def download_video(url, save_path, audio_only=False):
     """
     Downloads the video or audio from YouTube and saves it to the specified path.
@@ -56,7 +55,7 @@ def download_video(url, save_path, audio_only=False):
             'noplaylist': True,  # Ensure it's only downloading a single video
             'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save video in the specified path
             'postprocessors': [{  # Apply postprocessing to convert to desired format
-                'key': 'FFmpegAudioConvertor',  # Use FFmpeg to convert
+                'key': 'FFmpegAudioConvertor',  # Correct FFmpeg audio converter
                 'preferredcodec': 'mp3',  # Convert audio to MP3 format
                 'preferredquality': '192',  # Choose preferred quality (192kbps)
             }],
